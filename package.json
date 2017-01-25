@@ -1,0 +1,26 @@
+{
+  "name": "node-gyp-build",
+  "version": "0.0.0",
+  "description": "Build tool and bindings loader for node-gyp that supports prebuilds",
+  "main": "index.js",
+  "devDependencies": {
+    "standard": "^8.6.0"
+  },
+  "scripts": {
+    "test": "standard"
+  },
+  "bin": {
+    "node-gyp-build": "./bin.js",
+    "node-gyp-build-optional": "./optional.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mafintosh/sodium-native.git"
+  },
+  "author": "Mathias Buus (@mafintosh)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mafintosh/sodium-native/issues"
+  },
+  "homepage": "https://github.com/mafintosh/sodium-native"
+}

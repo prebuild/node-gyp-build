@@ -1,0 +1,52 @@
+var fs = require('fs')
+var path = require('path')
+var os = require('os')
+
+var abi = process.versions.modules // TODO: support old node where this is undef
+var runtime = isElectron() ? 'electron' : 'node'
+var arch = os.arch()
+var platform = os.platform()
+
+module.exports = load
+
+function load (dir) {
+  return require(load.path(dir))
+}
+
+load.path = function (dir) {
+  dir = path.resolve(dir || '.')
+
+  var release = getFirst(path.join(dir, 'build/Release'), matchBuild)
+  if (release) return release
+
+  var debug = getFirst(path.join(dir, 'build/Debug'), matchBuild)
+  if (debug) return debug
+
+  var prebuild = getFirst(path.join(dir, 'prebuilds'), matchPrebuild)
+  if (prebuild) return prebuild
+
+  throw new Error('No native build was found for runtime=' + runtime + ' abi=' + abi + ' platform=' + platform + ' arch=' + arch)
+}
+
+function getFirst (dir, filter) {
+  try {
+    var files = fs.readdirSync(dir).filter(filter)
+    return files[0] && path.join(dir, files[0])
+  } catch (err) {
+    return null
+  }
+}
+
+function matchPrebuild (name) {
+  var parts = name.split('-')
+  return parts[0] === platform && parts[1] === arch && parts[2] === runtime && parts[3] === abi + '.node'
+}
+
+function matchBuild (name) {
+  return /\.node$/.test(name)
+}
+
+function isElectron () {
+  if (process.versions && process.versions.electron) return true
+  return typeof window !== 'undefined' && window.process && window.process.type === 'renderer'
+}
