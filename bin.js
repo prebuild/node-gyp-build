@@ -1,16 +1,10 @@
 #!/usr/bin/env node
 
-var bindings = require('./')
 var proc = require('child_process')
 
-try {
-  bindings()
-  process.exit(0) // can already load a build
-} catch (err) {
-  // do nothing
-}
-
-preinstall(process.argv.slice(2).join(' '))
+proc.exec('node-gyp-build-test', function (err) {
+  if (err) preinstall(process.argv.slice(2).join(' '))
+})
 
 function build () {
   proc.spawn('node-gyp', ['rebuild'], {stdio: 'inherit'}).on('exit', function (code) {
