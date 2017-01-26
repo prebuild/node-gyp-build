@@ -1,6 +1,6 @@
 {
   "name": "node-gyp-build",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Build tool and bindings loader for node-gyp that supports prebuilds",
   "main": "index.js",
   "devDependencies": {
