@@ -16,7 +16,7 @@ proc.exec('node-gyp-build-test', function (err) {
 })
 
 function build () {
-  proc.spawn('node-gyp', ['rebuild'], {stdio: 'inherit'}).on('exit', function (code) {
+  proc.spawn(os.platform() === 'win32' ? 'node-gyp.cmd' : 'node-gyp', ['rebuild'], {stdio: 'inherit'}).on('exit', function (code) {
     process.exit(code)
   })
 }
