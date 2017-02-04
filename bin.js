@@ -3,27 +3,21 @@
 var proc = require('child_process')
 var os = require('os')
 
-var ARGS = process.argv.slice(2)
-var RUN_PREINSTALL = true
-
-if (os.platform() === 'win32' && ARGS[0] === '--no-windows-preinstall') {
-  ARGS.shift()
-  RUN_PREINSTALL = false
-}
-
-proc.exec('node-gyp-build-test', function (err) {
-  if (err) preinstall(ARGS.join(' '))
-})
+var preinstall = process.argv[2]
+var postinstall = process.argv[3]
 
 function build () {
   proc.spawn(os.platform() === 'win32' ? 'node-gyp.cmd' : 'node-gyp', ['rebuild'], {stdio: 'inherit'}).on('exit', function (code) {
-    process.exit(code)
+    if (code || !postinstall) process.exit(code)
+    exec(postinstall).on('exit', function (code) {
+      process.exit(code)
+    })
   })
 }
 
 function preinstall (cmd) {
-  if (!cmd || !RUN_PREINSTALL) return build()
-  exec(cmd).on('exit', function (code) {
+  if (!preinstall) return build()
+  exec(preinstall).on('exit', function (code) {
     if (code) process.exit(code)
     build()
   })
