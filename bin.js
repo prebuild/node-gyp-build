@@ -6,6 +6,10 @@ var os = require('os')
 var preinstall = process.argv[2]
 var postinstall = process.argv[3]
 
+proc.exec('node-gyp-build-test', function (err) {
+  if (err) preinstall()
+})
+
 function build () {
   proc.spawn(os.platform() === 'win32' ? 'node-gyp.cmd' : 'node-gyp', ['rebuild'], {stdio: 'inherit'}).on('exit', function (code) {
     if (code || !postinstall) process.exit(code)
@@ -15,7 +19,7 @@ function build () {
   })
 }
 
-function preinstall (cmd) {
+function preinstall () {
   if (!preinstall) return build()
   exec(preinstall).on('exit', function (code) {
     if (code) process.exit(code)
