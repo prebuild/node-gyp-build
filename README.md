@@ -25,7 +25,7 @@ First add `node-gyp-build` as an install script to your native project
 }
 ```
 
-Then in your `index.js`, instead of using the bindings module use `node-gyp-build` to load your binding.
+Then in your `index.js`, instead of using the [bindings module](https://www.npmjs.com/package/bindings) use `node-gyp-build` to load your binding.
 
 ``` js
 var binding = require('node-gyp-build')(__dirname)
