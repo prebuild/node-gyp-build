@@ -48,5 +48,6 @@ function matchBuild (name) {
 
 function isElectron () {
   if (process.versions && process.versions.electron) return true
+  if (process.env.ELECTRON_RUN_AS_NODE) return true
   return typeof window !== 'undefined' && window.process && window.process.type === 'renderer'
 }
