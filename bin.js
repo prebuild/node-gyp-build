@@ -26,7 +26,8 @@ function preinstall () {
 
 function exec (cmd) {
   if (process.platform !== 'win32') {
-    return proc.spawn('/bin/sh', ['-c', cmd], {
+    var shell = os.arch() === 'android' ? 'sh' : '/bin/sh'
+    return proc.spawn(shell, ['-c', cmd], {
       stdio: 'inherit'
     })
   }
