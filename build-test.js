@@ -6,7 +6,11 @@ var path = require('path')
 var test = null
 
 try {
-  test = require(path.join(process.cwd(), 'package.json')).prebuild.test
+  var pkg = require(path.join(process.cwd(), 'package.json'))
+  if (pkg.name && process.env[pkg.name.toUpperCase().replace(/-/g, '_')]) {
+    process.exit(0)
+  }
+  test = pkg.prebuild.test
 } catch (err) {
   //  do nothing
 }
