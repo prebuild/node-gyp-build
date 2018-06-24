@@ -17,7 +17,7 @@ load.path = function (dir) {
   dir = path.resolve(dir || '.')
 
   try {
-    var name = require(path.join(dir, 'package.json')).name.toUpperCase().replace(/\-/g, '_')
+    var name = require(path.join(dir, 'package.json')).name.toUpperCase().replace(/-/g, '_')
     if (process.env[name + '_PREBUILD']) dir = process.env[name + '_PREBUILD']
   } catch (err) {}
 
