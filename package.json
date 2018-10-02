@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/mafintosh/node-gyp-build/issues"
   },
-  "homepage": "https://github.com/mafintosh/node-gyp-build"
+  "homepage": "https://github.com/mafintosh/node-gyp-build",
+  "dependencies": {
+    "detect-libc": "^1.0.3"
+  }
 }

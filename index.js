@@ -1,11 +1,13 @@
 var fs = require('fs')
 var path = require('path')
 var os = require('os')
+var detectLibc = require('detect-libc')
 
 var abi = process.versions.modules // TODO: support old node where this is undef
 var runtime = isElectron() ? 'electron' : 'node'
 var arch = os.arch()
 var platform = os.platform()
+var libc = process.env.LIBC || (detectLibc.isNonGlibcLinux && detectLibc.family) || ''
 
 module.exports = load
 
@@ -27,13 +29,13 @@ load.path = function (dir) {
   var debug = getFirst(path.join(dir, 'build/Debug'), matchBuild)
   if (debug) return debug
 
-  var prebuild = getFirst(path.join(dir, 'prebuilds/' + platform + '-' + arch), matchPrebuild)
+  var prebuild = getFirst(path.join(dir, 'prebuilds/' + platform + libc + '-' + arch), matchPrebuild)
   if (prebuild) return prebuild
 
-  var napi = getFirst(path.join(dir, 'prebuilds/' + platform + '-' + arch), matchNapi)
+  var napi = getFirst(path.join(dir, 'prebuilds/' + platform + libc + '-' + arch), matchNapi)
   if (napi) return napi
 
-  throw new Error('No native build was found for runtime=' + runtime + ' abi=' + abi + ' platform=' + platform + ' arch=' + arch)
+  throw new Error('No native build was found for runtime=' + runtime + ' abi=' + abi + ' platform=' + platform + libc + ' arch=' + arch)
 }
 
 function getFirst (dir, filter) {
