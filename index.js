@@ -30,6 +30,9 @@ load.path = function (dir) {
   var prebuild = getFirst(path.join(dir, 'prebuilds/' + platform + '-' + arch), matchPrebuild)
   if (prebuild) return prebuild
 
+  var napiRuntime = getFirst(path.join(dir, 'prebuilds/' + platform + '-' + arch), matchNapiRuntime)
+  if (napiRuntime) return napiRuntime
+
   var napi = getFirst(path.join(dir, 'prebuilds/' + platform + '-' + arch), matchNapi)
   if (napi) return napi
 
@@ -43,6 +46,10 @@ function getFirst (dir, filter) {
   } catch (err) {
     return null
   }
+}
+
+function matchNapiRuntime (name) {
+  return name === runtime + '-napi.node'
 }
 
 function matchNapi (name) {
