@@ -2,6 +2,7 @@ var fs = require('fs')
 var path = require('path')
 var os = require('os')
 
+// Workaround to fix webpack's build warnings: 'the request of a dependency is an expression'
 var runtimeRequire = typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require
 
 var abi = process.versions.modules // TODO: support old node where this is undef
