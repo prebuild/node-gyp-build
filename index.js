@@ -2,6 +2,9 @@ var fs = require('fs')
 var path = require('path')
 var os = require('os')
 
+// Workaround to fix webpack's build warnings: 'the request of a dependency is an expression'
+var runtimeRequire = typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require
+
 var abi = process.versions.modules // TODO: support old node where this is undef
 var runtime = isElectron() ? 'electron' : 'node'
 var arch = os.arch()
@@ -10,14 +13,14 @@ var platform = os.platform()
 module.exports = load
 
 function load (dir) {
-  return require(load.path(dir))
+  return runtimeRequire(load.path(dir))
 }
 
 load.path = function (dir) {
   dir = path.resolve(dir || '.')
 
   try {
-    var name = require(path.join(dir, 'package.json')).name.toUpperCase().replace(/-/g, '_')
+    var name = runtimeRequire(path.join(dir, 'package.json')).name.toUpperCase().replace(/-/g, '_')
     if (process.env[name + '_PREBUILD']) dir = process.env[name + '_PREBUILD']
   } catch (err) {}
 
