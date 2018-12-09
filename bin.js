@@ -28,7 +28,7 @@ function resolveGypDirs () {
   }
 
   var binPaths = []
-  while (true) {
+  while (gypDir) {
     var nextGyp = path.dirname(gypDir)
     if (nextGyp === gypDir) break
     binPaths.push(path.join(nextGyp, 'node_modules', '.bin'))
