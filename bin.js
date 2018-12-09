@@ -9,19 +9,33 @@ proc.exec('node-gyp-build-test', function (err) {
 })
 
 function build () {
-  var gypDir
-  try {
-    gypDir = path.dirname(require.resolve('node-gyp'))
-  } catch (_) {
-    gypDir = ''
-  }
+  process.env.PATH = [resolveGypDirs(), process.env.PATH].join(path.delimiter)
 
-  proc.spawn(path.join(gypDir, os.platform() === 'win32' ? 'node-gyp.cmd' : 'node-gyp'), ['rebuild'], {stdio: 'inherit'}).on('exit', function (code) {
+  proc.spawn(os.platform() === 'win32' ? 'node-gyp.cmd' : 'node-gyp', ['rebuild'], { stdio: 'inherit' }).on('exit', function (code) {
     if (code || !process.argv[3]) process.exit(code)
     exec(process.argv[3]).on('exit', function (code) {
       process.exit(code)
     })
   })
+}
+
+function resolveGypDirs () {
+  var gypDir
+  try {
+    gypDir = path.join(path.dirname(require.resolve('node-gyp/package.json')))
+  } catch (_) {
+    gypDir = ''
+  }
+
+  var binPaths = []
+  while (true) {
+    var nextGyp = path.dirname(gypDir)
+    if (nextGyp === gypDir) break
+    binPaths.push(path.join(nextGyp, 'node_modules', '.bin'))
+    gypDir = nextGyp
+  }
+
+  return binPaths.join(path.delimiter)
 }
 
 function preinstall () {
