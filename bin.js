@@ -2,13 +2,24 @@
 
 var proc = require('child_process')
 var os = require('os')
+var path = require('path')
 
 proc.exec('node-gyp-build-test', function (err) {
   if (err) preinstall()
 })
 
 function build () {
-  proc.spawn(os.platform() === 'win32' ? 'node-gyp.cmd' : 'node-gyp', ['rebuild'], {stdio: 'inherit'}).on('exit', function (code) {
+  var args = [ os.platform() === 'win32' ? 'node-gyp.cmd' : 'node-gyp', 'rebuild' ]
+  
+  try {
+    args = [
+      process.execPath,
+      path.join(require.resolve('node-gyp/package.json'), '..', require('node-gyp/package.json').bin['node-gyp']),
+      'rebuild'
+    ]
+  } catch (_) {}
+  
+  proc.spawn(args[0], args.slice(1), {stdio: 'inherit'}).on('exit', function (code) {
     if (code || !process.argv[3]) process.exit(code)
     exec(process.argv[3]).on('exit', function (code) {
       process.exit(code)
