@@ -4,13 +4,28 @@ var proc = require('child_process')
 var os = require('os')
 var path = require('path')
 
-proc.exec('node-gyp-build-test', function (err) {
-  if (err) preinstall()
-})
+if (!buildFromSource()) {
+  proc.exec('node-gyp-build-test', function (err) {
+    if (err) preinstall()
+  })
+} else {
+  preinstall()
+}
+
+function buildFromSource () {
+  if (!process.env.npm_config_argv) return false
+
+  try {
+    var npmArgv = JSON.parse(process.env.npm_config_argv).cooked
+    return npmArgv.indexOf('--build-from-source') !== -1
+  } catch (_) { }
+
+  return false
+}
 
 function build () {
   var args = [ os.platform() === 'win32' ? 'node-gyp.cmd' : 'node-gyp', 'rebuild' ]
-  
+
   try {
     args = [
       process.execPath,
@@ -18,7 +33,7 @@ function build () {
       'rebuild'
     ]
   } catch (_) {}
-  
+
   proc.spawn(args[0], args.slice(1), {stdio: 'inherit'}).on('exit', function (code) {
     if (code || !process.argv[3]) process.exit(code)
     exec(process.argv[3]).on('exit', function (code) {
