@@ -16,11 +16,10 @@ function buildFromSource () {
   if (!process.env.npm_config_argv) return false
 
   try {
-    var npmArgv = JSON.parse(process.env.npm_config_argv).cooked
-    return npmArgv.indexOf('--build-from-source') !== -1
-  } catch (_) { }
-
-  return false
+    return JSON.parse(process.env.npm_config_argv).cooked.indexOf('--build-from-source') !== -1
+  } catch (_) {
+    return false
+  }
 }
 
 function build () {
