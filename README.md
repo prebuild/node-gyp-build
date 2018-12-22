@@ -34,6 +34,8 @@ var binding = require('node-gyp-build')(__dirname)
 If you do these two things and bundle prebuilds [prebuildify](https://github.com/mafintosh/prebuildify) your native module will work for most platforms
 without having to compile on install time AND will work in both node and electron without the need to recompile between usage.
 
+Users can override `node-gyp-build` and force compiling by doing `npm install --build-from-source`.
+
 ## License
 
 MIT
