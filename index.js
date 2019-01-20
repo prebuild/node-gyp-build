@@ -1,7 +1,6 @@
 var fs = require('fs')
 var path = require('path')
 var os = require('os')
-var detectLibc = require('detect-libc')
 
 // Workaround to fix webpack's build warnings: 'the request of a dependency is an expression'
 var runtimeRequire = typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require // eslint-disable-line
@@ -10,7 +9,7 @@ var abi = process.versions.modules // TODO: support old node where this is undef
 var runtime = isElectron() ? 'electron' : 'node'
 var arch = os.arch()
 var platform = os.platform()
-var libc = process.env.LIBC || detectLibc.family || ''
+var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
 var armv = process.env.ARM_VERSION || (arch === 'arm64' ? '8' : process.config.variables.arm_version) || ''
 
 module.exports = load
@@ -87,4 +86,8 @@ function isElectron () {
   if (process.versions && process.versions.electron) return true
   if (process.env.ELECTRON_RUN_AS_NODE) return true
   return typeof window !== 'undefined' && window.process && window.process.type === 'renderer'
+}
+
+function isAlpine (platform) {
+  return platform === 'linux' && fs.existsSync('/etc/alpine-release')
 }
