@@ -36,6 +36,20 @@ without having to compile on install time AND will work in both node and electro
 
 Users can override `node-gyp-build` and force compiling by doing `npm install --build-from-source`.
 
+## Supported prebuild names
+
+If so desired you can bundle more specific flavors, for example `musl` builds to support Alpine, or targeting a numbered ARM architecture version.
+
+These prebuilds can be bundled in addition to generic prebuilds; `node-gyp-build` will try to find the most specific flavor first. In order of precedence:
+
+- If `arch` is `'arm'` or `'arm64'`:
+  - `${platform}${libc}-${arch}-v${arm_version}`
+  - `${platform}-${arch}-v${arm_version}`
+- `${platform}${libc}-${arch}`
+- `${platform}-${arch}`
+
+The `libc` flavor and `arm_version` are auto-detected but can be overridden through the `LIBC` and `ARM_VERSION` environment variables, respectively.
+
 ## License
 
 MIT

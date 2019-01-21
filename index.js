@@ -9,6 +9,8 @@ var abi = process.versions.modules // TODO: support old node where this is undef
 var runtime = isElectron() ? 'electron' : 'node'
 var arch = os.arch()
 var platform = os.platform()
+var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
+var armv = process.env.ARM_VERSION || (arch === 'arm64' ? '8' : process.config.variables.arm_version) || ''
 
 module.exports = load
 
@@ -30,16 +32,28 @@ load.path = function (dir) {
   var debug = getFirst(path.join(dir, 'build/Debug'), matchBuild)
   if (debug) return debug
 
-  var prebuild = getFirst(path.join(dir, 'prebuilds/' + platform + '-' + arch), matchPrebuild)
-  if (prebuild) return prebuild
+  var names = [platform + '-' + arch]
+  if (libc) names.push(platform + libc + '-' + arch)
 
-  var napiRuntime = getFirst(path.join(dir, 'prebuilds/' + platform + '-' + arch), matchNapiRuntime)
-  if (napiRuntime) return napiRuntime
+  if ((arch === 'arm' || arch === 'arm64') && armv) {
+    names.forEach(function (name) {
+      names.push(name + '-v' + armv)
+    })
+  }
 
-  var napi = getFirst(path.join(dir, 'prebuilds/' + platform + '-' + arch), matchNapi)
-  if (napi) return napi
+  // Find most specific flavor first
+  for (var i = names.length; i--;) {
+    var prebuild = getFirst(path.join(dir, 'prebuilds/' + names[i]), matchPrebuild)
+    if (prebuild) return prebuild
 
-  throw new Error('No native build was found for runtime=' + runtime + ' abi=' + abi + ' platform=' + platform + ' arch=' + arch)
+    var napiRuntime = getFirst(path.join(dir, 'prebuilds/' + names[i]), matchNapiRuntime)
+    if (napiRuntime) return napiRuntime
+
+    var napi = getFirst(path.join(dir, 'prebuilds/' + names[i]), matchNapi)
+    if (napi) return napi
+  }
+
+  throw new Error('No native build was found for runtime=' + runtime + ' abi=' + abi + ' platform=' + platform + libc + ' arch=' + arch)
 }
 
 function getFirst (dir, filter) {
@@ -72,4 +86,8 @@ function isElectron () {
   if (process.versions && process.versions.electron) return true
   if (process.env.ELECTRON_RUN_AS_NODE) return true
   return typeof window !== 'undefined' && window.process && window.process.type === 'renderer'
+}
+
+function isAlpine (platform) {
+  return platform === 'linux' && fs.existsSync('/etc/alpine-release')
 }
