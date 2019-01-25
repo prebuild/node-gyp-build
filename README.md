@@ -1,10 +1,12 @@
 # node-gyp-build
 
-Build tool and bindings loader for node-gyp that supports prebuilds.
+> Build tool and bindings loader for node-gyp that supports prebuilds.
 
 ```
 npm install node-gyp-build
 ```
+
+[![Build Status](https://travis-ci.org/prebuild/node-gyp-build.svg?branch=master)](https://travis-ci.org/prebuild/node-gyp-build)
 
 Use together with [prebuildify](https://github.com/mafintosh/prebuildify) to easily support prebuilds for your native modules.
 
