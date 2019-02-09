@@ -5,21 +5,14 @@ var os = require('os')
 var path = require('path')
 
 if (!buildFromSource()) {
-  proc.exec('node-gyp-build-test', function (err) {
-    if (err) preinstall()
+  proc.exec('node-gyp-build-test', function (err, stdout, stderr) {
+    if (err) {
+      if (verbose()) console.error(stderr)
+      preinstall()
+    }
   })
 } else {
   preinstall()
-}
-
-function buildFromSource () {
-  if (!process.env.npm_config_argv) return false
-
-  try {
-    return JSON.parse(process.env.npm_config_argv).cooked.indexOf('--build-from-source') !== -1
-  } catch (_) {
-    return false
-  }
 }
 
 function build () {
@@ -61,4 +54,22 @@ function exec (cmd) {
     windowsVerbatimArguments: true,
     stdio: 'inherit'
   })
+}
+
+function buildFromSource () {
+  return hasFlag('--build-from-source')
+}
+
+function verbose () {
+  return hasFlag('--verbose')
+}
+
+function hasFlag (flag) {
+  if (!process.env.npm_config_argv) return false
+
+  try {
+    return JSON.parse(process.env.npm_config_argv).original.indexOf(flag) !== -1
+  } catch (_) {
+    return false
+  }
 }
