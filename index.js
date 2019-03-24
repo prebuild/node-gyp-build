@@ -11,6 +11,7 @@ var arch = os.arch()
 var platform = os.platform()
 var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
 var armv = process.env.ARM_VERSION || (arch === 'arm64' ? '8' : process.config.variables.arm_version) || ''
+var uv = (process.versions.uv || '').split('.')[0]
 
 module.exports = load
 
@@ -32,54 +33,105 @@ load.path = function (dir) {
   var debug = getFirst(path.join(dir, 'build/Debug'), matchBuild)
   if (debug) return debug
 
-  var names = [platform + '-' + arch]
-  if (libc) names.push(platform + libc + '-' + arch)
-
-  if ((arch === 'arm' || arch === 'arm64') && armv) {
-    names.forEach(function (name) {
-      names.push(name + '-v' + armv)
-    })
-  }
-
   // Find most specific flavor first
-  for (var i = names.length; i--;) {
-    var prebuild = getFirst(path.join(dir, 'prebuilds/' + names[i]), matchPrebuild)
-    if (prebuild) return prebuild
+  var prebuilds = path.join(dir, 'prebuilds', platform + '-' + arch)
+  var parsed = readdirSync(prebuilds).map(parseTags)
+  var candidates = parsed.filter(matchTags(runtime, abi))
+  var winner = candidates.sort(compareTags(runtime))[0]
+  if (winner) return path.join(prebuilds, winner.file)
 
-    var napiRuntime = getFirst(path.join(dir, 'prebuilds/' + names[i]), matchNapiRuntime)
-    if (napiRuntime) return napiRuntime
+  var target = [
+    'platform=' + platform,
+    'arch=' + arch,
+    'runtime=' + runtime,
+    'abi=' + abi,
+    'uv=' + uv,
+    armv ? 'armv=' + armv : '',
+    'libc=' + libc
+  ].filter(Boolean).join(' ')
 
-    var napi = getFirst(path.join(dir, 'prebuilds/' + names[i]), matchNapi)
-    if (napi) return napi
+  throw new Error('No native build was found for ' + target)
+}
+
+function readdirSync (dir) {
+  try {
+    return fs.readdirSync(dir)
+  } catch (err) {
+    return []
   }
-
-  throw new Error('No native build was found for runtime=' + runtime + ' abi=' + abi + ' platform=' + platform + libc + ' arch=' + arch)
 }
 
 function getFirst (dir, filter) {
-  try {
-    var files = fs.readdirSync(dir).filter(filter)
-    return files[0] && path.join(dir, files[0])
-  } catch (err) {
-    return null
-  }
-}
-
-function matchNapiRuntime (name) {
-  return name === runtime + '-napi.node'
-}
-
-function matchNapi (name) {
-  return name === 'node-napi.node'
-}
-
-function matchPrebuild (name) {
-  var parts = name.split('-')
-  return parts[0] === runtime && parts[1] === abi + '.node'
+  var files = readdirSync(dir).filter(filter)
+  return files[0] && path.join(dir, files[0])
 }
 
 function matchBuild (name) {
   return /\.node$/.test(name)
+}
+
+function parseTags (file) {
+  var arr = file.split('.')
+  var extension = arr.pop()
+  var tags = { file: file, specificity: 0 }
+
+  if (extension !== 'node') return
+
+  for (var i = 0; i < arr.length; i++) {
+    var tag = arr[i]
+
+    if (tag === 'node' || tag === 'electron' || tag === 'node-webkit') {
+      tags.runtime = tag
+    } else if (tag === 'napi') {
+      tags.napi = true
+    } else if (tag.slice(0, 3) === 'abi') {
+      tags.abi = tag.slice(3)
+    } else if (tag.slice(0, 2) === 'uv') {
+      tags.uv = tag.slice(2)
+    } else if (tag.slice(0, 4) === 'armv') {
+      tags.armv = tag.slice(4)
+    } else if (tag === 'glibc' || tag === 'musl') {
+      tags.libc = tag
+    } else {
+      return
+    }
+
+    tags.specificity++
+  }
+
+  return tags
+}
+
+function matchTags (runtime, abi) {
+  return function (tags) {
+    if (tags == null) return false
+    if (tags.runtime !== runtime && !runtimeAgnostic(tags)) return false
+    if (tags.abi !== abi && !tags.napi) return false
+    if (tags.uv && tags.uv !== uv) return false
+    if (tags.armv && tags.armv !== armv) return false
+    if (tags.libc && tags.libc !== libc) return false
+
+    return true
+  }
+}
+
+function runtimeAgnostic (tags) {
+  return tags.runtime === 'node' && tags.napi
+}
+
+function compareTags (runtime) {
+  // Precedence: non-agnostic runtime, abi over napi, then by specificity.
+  return function (a, b) {
+    if (a.runtime !== b.runtime) {
+      return a.runtime === runtime ? -1 : 1
+    } else if (a.abi !== b.abi) {
+      return a.abi ? -1 : 1
+    } else if (a.specificity !== b.specificity) {
+      return a.specificity > b.specificity ? -1 : 1
+    } else {
+      return 0
+    }
+  }
 }
 
 function isElectron () {
@@ -91,3 +143,9 @@ function isElectron () {
 function isAlpine (platform) {
   return platform === 'linux' && fs.existsSync('/etc/alpine-release')
 }
+
+// Exposed for unit tests
+// TODO: move to lib
+load.parseTags = parseTags
+load.matchTags = matchTags
+load.compareTags = compareTags
