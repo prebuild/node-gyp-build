@@ -8,7 +8,6 @@ var compareTags = require('.').compareTags
 
 test('parse tags', function (t) {
   t.is(parseTags('ignored'), undefined)
-  t.is(parseTags('ignored.node'), undefined)
   t.is(parseTags('node.ignored'), undefined)
 
   t.is(parseTags('node.node').runtime, 'node')

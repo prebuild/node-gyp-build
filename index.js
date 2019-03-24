@@ -93,7 +93,7 @@ function parseTags (file) {
     } else if (tag === 'glibc' || tag === 'musl') {
       tags.libc = tag
     } else {
-      return
+      continue
     }
 
     tags.specificity++
