@@ -1,6 +1,6 @@
 # node-gyp-build
 
-> Build tool and bindings loader for node-gyp that supports prebuilds.
+> Build tool and bindings loader for [`node-gyp`][node-gyp] that supports prebuilds.
 
 ```
 npm install node-gyp-build
@@ -8,13 +8,15 @@ npm install node-gyp-build
 
 [![Build Status](https://travis-ci.org/prebuild/node-gyp-build.svg?branch=master)](https://travis-ci.org/prebuild/node-gyp-build)
 
-Use together with [prebuildify](https://github.com/prebuild/prebuildify) to easily support prebuilds for your native modules.
+Use together with [`prebuildify`][prebuildify] to easily support prebuilds for your native modules.
 
 ## Usage
 
-`node-gyp-build` works similar to `node-gyp build` except that it will check if a build or prebuild is present before rebuilding your project.
+> **Note.** Prebuild names have changed in [`prebuildify@3`][prebuildify] and `node-gyp-build@4`. Please see the documentation below.
 
-It's main intended use is as an npm install script and bindings loader for native modules that bundle prebuilds using [prebuildify](https://github.com/prebuild/prebuildify).
+`node-gyp-build` works similar to [`node-gyp build`][node-gyp] except that it will check if a build or prebuild is present before rebuilding your project.
+
+It's main intended use is as an npm install script and bindings loader for native modules that bundle prebuilds using [`prebuildify`][prebuildify].
 
 First add `node-gyp-build` as an install script to your native project
 
@@ -27,13 +29,13 @@ First add `node-gyp-build` as an install script to your native project
 }
 ```
 
-Then in your `index.js`, instead of using the [bindings module](https://www.npmjs.com/package/bindings) use `node-gyp-build` to load your binding.
+Then in your `index.js`, instead of using the [`bindings`](https://www.npmjs.com/package/bindings) module use `node-gyp-build` to load your binding.
 
 ``` js
 var binding = require('node-gyp-build')(__dirname)
 ```
 
-If you do these two things and bundle prebuilds [prebuildify](https://github.com/prebuild/prebuildify) your native module will work for most platforms
+If you do these two things and bundle prebuilds with [`prebuildify`][prebuildify] your native module will work for most platforms
 without having to compile on install time AND will work in both node and electron without the need to recompile between usage.
 
 Users can override `node-gyp-build` and force compiling by doing `npm install --build-from-source`.
@@ -42,16 +44,13 @@ Users can override `node-gyp-build` and force compiling by doing `npm install --
 
 If so desired you can bundle more specific flavors, for example `musl` builds to support Alpine, or targeting a numbered ARM architecture version.
 
-These prebuilds can be bundled in addition to generic prebuilds; `node-gyp-build` will try to find the most specific flavor first. In order of precedence:
+These prebuilds can be bundled in addition to generic prebuilds; `node-gyp-build` will try to find the most specific flavor first. Prebuild filenames are composed of _tags_. The runtime tag takes precedence, as does an `abi` tag over `napi`. For more details on tags, please see [`prebuildify`][prebuildify].
 
-- If `arch` is `'arm'` or `'arm64'`:
-  - `${platform}${libc}-${arch}-v${arm_version}`
-  - `${platform}-${arch}-v${arm_version}`
-- `${platform}${libc}-${arch}`
-- `${platform}-${arch}`
-
-The `libc` flavor and `arm_version` are auto-detected but can be overridden through the `LIBC` and `ARM_VERSION` environment variables, respectively.
+Values for the `libc` and `armv` tags are auto-detected but can be overridden through the `LIBC` and `ARM_VERSION` environment variables, respectively.
 
 ## License
 
 MIT
+
+[prebuildify]: https://github.com/prebuild/prebuildify
+[node-gyp]: https://www.npmjs.com/package/node-gyp

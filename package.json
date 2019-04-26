@@ -4,10 +4,12 @@
   "description": "Build tool and bindings loader for node-gyp that supports prebuilds",
   "main": "index.js",
   "devDependencies": {
-    "standard": "^8.6.0"
+    "array-shuffle": "^1.0.1",
+    "standard": "^8.6.0",
+    "tape": "^4.10.1"
   },
   "scripts": {
-    "test": "standard"
+    "test": "standard && node test"
   },
   "bin": {
     "node-gyp-build": "./bin.js",
