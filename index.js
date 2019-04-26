@@ -5,6 +5,7 @@ var os = require('os')
 // Workaround to fix webpack's build warnings: 'the request of a dependency is an expression'
 var runtimeRequire = typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require // eslint-disable-line
 
+var prebuildsOnly = !!process.env.PREBUILDS_ONLY
 var abi = process.versions.modules // TODO: support old node where this is undef
 var runtime = isElectron() ? 'electron' : 'node'
 var arch = os.arch()
@@ -26,11 +27,13 @@ load.path = function (dir) {
     if (process.env[name + '_PREBUILD']) dir = process.env[name + '_PREBUILD']
   } catch (err) {}
 
-  var release = getFirst(path.join(dir, 'build/Release'), matchBuild)
-  if (release) return release
+  if (!prebuildsOnly) {
+    var release = getFirst(path.join(dir, 'build/Release'), matchBuild)
+    if (release) return release
 
-  var debug = getFirst(path.join(dir, 'build/Debug'), matchBuild)
-  if (debug) return debug
+    var debug = getFirst(path.join(dir, 'build/Debug'), matchBuild)
+    if (debug) return debug
+  }
 
   var names = [platform + '-' + arch]
   if (libc) names.push(platform + libc + '-' + arch)
