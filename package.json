@@ -5,7 +5,7 @@
   "main": "index.js",
   "devDependencies": {
     "array-shuffle": "^1.0.1",
-    "standard": "^8.6.0",
+    "standard": "^13.0.2",
     "tape": "^4.10.1"
   },
   "scripts": {
