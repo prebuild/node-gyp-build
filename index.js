@@ -36,12 +36,11 @@ load.path = function (dir) {
     if (debug) return debug
   }
 
-  // Find most specific flavor first
-  var prebuilds = path.join(dir, 'prebuilds', platform + '-' + arch)
-  var parsed = readdirSync(prebuilds).map(parseTags)
-  var candidates = parsed.filter(matchTags(runtime, abi))
-  var winner = candidates.sort(compareTags(runtime))[0]
-  if (winner) return path.join(prebuilds, winner.file)
+  var prebuild = resolve(dir)
+  if (prebuild) return prebuild
+
+  var nearby = resolve(path.dirname(process.execPath))
+  if (nearby) return nearby
 
   var target = [
     'platform=' + platform,
@@ -54,6 +53,15 @@ load.path = function (dir) {
   ].filter(Boolean).join(' ')
 
   throw new Error('No native build was found for ' + target)
+
+  function resolve (dir) {
+    // Find most specific flavor first
+    var prebuilds = path.join(dir, 'prebuilds', platform + '-' + arch)
+    var parsed = readdirSync(prebuilds).map(parseTags)
+    var candidates = parsed.filter(matchTags(runtime, abi))
+    var winner = candidates.sort(compareTags(runtime))[0]
+    if (winner) return path.join(prebuilds, winner.file)
+  }
 }
 
 function readdirSync (dir) {

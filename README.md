@@ -40,6 +40,8 @@ without having to compile on install time AND will work in both node and electro
 
 Users can override `node-gyp-build` and force compiling by doing `npm install --build-from-source`.
 
+Prebuilds will be attempted loaded from `MODULE_PATH/prebuilds/...` and then next `EXEC_PATH/prebuilds/...` (the latter allowing use with `zeit/pkg`)
+
 ## Supported prebuild names
 
 If so desired you can bundle more specific flavors, for example `musl` builds to support Alpine, or targeting a numbered ARM architecture version.
