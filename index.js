@@ -52,7 +52,7 @@ load.path = function (dir) {
     armv ? 'armv=' + armv : '',
     'libc=' + libc,
     'node=' + process.versions.node,
-    process.versions.electron ? 'electron=' + process.versions.electron : '',
+    (process.versions && process.versions.electron) ? 'electron=' + process.versions.electron : '',
     typeof __webpack_require__ === 'function' ? 'webpack=true' : '' // eslint-disable-line
   ].filter(Boolean).join(' ')
 
