@@ -19,6 +19,17 @@ module.exports = load
 
 function load (dir) {
   return runtimeRequire(load.path(dir))
+function loadPackageJSON(dir, name, attempts) {
+  attempts = attempts || 1
+  if (attempts > 5) {
+    throw new Error('Can\'t resolve main package.json file')
+  }
+  var mainPath = attempts === 1 ? dir : Array(attempts).join("../") + dir
+  if (fs.existsSync(path.resolve(mainPath))) {
+    return {dir: mainPath, packageJSON: runtimeRequire.main.require(mainPath + 'package.json')}
+  } else {
+    return loadPackageJSON(dir, name, attempts + 1)
+  }
 }
 
 load.path = function (dir) {
