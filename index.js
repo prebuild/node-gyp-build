@@ -34,11 +34,20 @@ function loadPackageJSON(dir, name, attempts) {
   }
 }
 
-load.path = function (dir) {
-  dir = path.resolve(dir || '.')
 
+load.path = function (dir, name) {
   try {
-    var name = runtimeRequire(path.join(dir, 'package.json')).name.toUpperCase().replace(/-/g, '_')
+    var packageJSON
+    if (name) {
+      loadPackageJSONReturn = loadPackageJSON(dir, name)
+      packageJSON = loadPackageJSONReturn.packageJSON
+      dir = path.resolve(loadPackageJSONReturn.dir)
+    } else {
+      dir = path.resolve(dir || '.')
+      var packageJSONPath = path.join(dir, 'package.json')
+      packageJSON = runtimeRequire(packageJSONPath)
+    }
+    var name = packageJSON.name.toUpperCase().replace(/-/g, '_')
     if (process.env[name + '_PREBUILD']) dir = process.env[name + '_PREBUILD']
   } catch (err) {}
 
