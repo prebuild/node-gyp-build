@@ -17,8 +17,10 @@ var uv = (process.versions.uv || '').split('.')[0]
 
 module.exports = load
 
-function load (dir) {
-  return runtimeRequire(load.path(dir))
+function load (dir, name) {
+  return runtimeRequire(load.path(dir, name))
+}
+
 function loadPackageJSON(dir, name, attempts) {
   attempts = attempts || 1
   if (attempts > 5) {
