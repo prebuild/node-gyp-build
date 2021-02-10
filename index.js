@@ -1,6 +1,6 @@
 var fs = require('fs')
-var path = require('path')
 var os = require('os')
+var path = require('path')
 
 // Workaround to fix webpack's build warnings: 'the request of a dependency is an expression'
 var runtimeRequire = typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require // eslint-disable-line
@@ -17,32 +17,30 @@ var uv = (process.versions.uv || '').split('.')[0]
 
 module.exports = load
 
-function load (dir) {
-  return runtimeRequire(load.path(dir))
+function load (dir1, dir2) {
+  return runtimeRequire(load.path(dir1, dir2))
 }
 
-load.path = function (dir) {
-  dir = path.resolve(dir || '.')
-
-  try {
-    var name = runtimeRequire(path.join(dir, 'package.json')).name.toUpperCase().replace(/-/g, '_')
-    if (process.env[name + '_PREBUILD']) dir = process.env[name + '_PREBUILD']
-  } catch (err) {}
-
-  if (!prebuildsOnly) {
-    var release = getFirst(path.join(dir, 'build/Release'), matchBuild)
-    if (release) return release
-
-    var debug = getFirst(path.join(dir, 'build/Debug'), matchBuild)
-    if (debug) return debug
+load.path = function (dir1, dir2) {
+  // check first optional directory
+  var dir = checkPath(dir1);
+  if (dir) {
+    return dir;
   }
 
-  var prebuild = resolve(dir)
-  if (prebuild) return prebuild
+  // check second optional directory
+  dir = checkPath(dir2);
+  if (dir) {
+    return dir;
+  }
 
+  // check exe path
   var nearby = resolve(path.dirname(process.execPath))
-  if (nearby) return nearby
+  if (nearby) {
+    return nearby;
+  }
 
+  // fail
   var target = [
     'platform=' + platform,
     'arch=' + arch,
@@ -56,16 +54,38 @@ load.path = function (dir) {
     typeof __webpack_require__ === 'function' ? 'webpack=true' : '' // eslint-disable-line
   ].filter(Boolean).join(' ')
 
-  throw new Error('No native build was found for ' + target + '\n    loaded from: ' + dir + '\n')
+  throw new Error('No native build was found for ' + target + '\n    loaded from 1: ' + dir1 + '\n    loaded from 2: ' + dir2 + '\n')
+}
 
-  function resolve (dir) {
-    // Find most specific flavor first
-    var prebuilds = path.join(dir, 'prebuilds', platform + '-' + arch)
-    var parsed = readdirSync(prebuilds).map(parseTags)
-    var candidates = parsed.filter(matchTags(runtime, abi))
-    var winner = candidates.sort(compareTags(runtime))[0]
-    if (winner) return path.join(prebuilds, winner.file)
+function checkPath(dir) {
+  dir = path.resolve(dir || '.')
+
+  try {
+    var name = runtimeRequire(path.join(dir, 'package.json')).name.toUpperCase().replace(/-/g, '_')
+    if (process.env[name + '_PREBUILD']) 
+      dir = process.env[name + '_PREBUILD']
+  } catch (err) {}
+
+  if (!prebuildsOnly) {
+    var release = getFirst(path.join(dir, 'build/Release'), matchBuild)
+    if (release) 
+      return release;
+
+    var debug = getFirst(path.join(dir, 'build/Debug'), matchBuild)
+    if (debug) 
+      return debug;
   }
+
+  return resolve(dir);
+}
+
+function resolve (dir) {
+  // Find most specific flavor first
+  var prebuilds = path.join(dir, 'prebuilds', platform + '-' + arch)
+  var parsed = readdirSync(prebuilds).map(parseTags)
+  var candidates = parsed.filter(matchTags(runtime, abi))
+  var winner = candidates.sort(compareTags(runtime))[0]
+  return winner ? path.join(prebuilds, winner.file) : null;
 }
 
 function readdirSync (dir) {
