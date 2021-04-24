@@ -6,7 +6,7 @@
 npm install node-gyp-build
 ```
 
-[![Build Status](https://travis-ci.org/prebuild/node-gyp-build.svg?branch=master)](https://travis-ci.org/prebuild/node-gyp-build)
+[![Test](https://github.com/prebuild/node-gyp-build/actions/workflows/test.yml/badge.svg)](https://github.com/prebuild/node-gyp-build/actions/workflows/test.yml)
 
 Use together with [`prebuildify`][prebuildify] to easily support prebuilds for your native modules.
 
