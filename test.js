@@ -129,8 +129,8 @@ test('parse tuples', function (t) {
     architectures: ['arm64']
   })
 
-  t.same(parseTuple('darwin-x64_arm64'), {
-    name: 'darwin-x64_arm64',
+  t.same(parseTuple('darwin-x64+arm64'), {
+    name: 'darwin-x64+arm64',
     platform: 'darwin',
     architectures: ['x64', 'arm64']
   })
@@ -139,26 +139,26 @@ test('parse tuples', function (t) {
   t.is(parseTuple(''), undefined)
   t.is(parseTuple('linux-'), undefined)
   t.is(parseTuple('-arm64'), undefined)
-  t.is(parseTuple('linux-arm64_'), undefined)
-  t.is(parseTuple('linux-arm64__x64'), undefined)
-  t.is(parseTuple('linux-_arm64'), undefined)
+  t.is(parseTuple('linux-arm64+'), undefined)
+  t.is(parseTuple('linux-arm64++x64'), undefined)
+  t.is(parseTuple('linux-+arm64'), undefined)
 
   t.end()
 })
 
 test('sort tuples', function (t) {
-  var tuples = ['darwin-arm64_x64_ia32', 'darwin-x64', 'darwin-x64_arm64']
+  var tuples = ['darwin-arm64+x64+ia32', 'darwin-x64', 'darwin-x64+arm64']
   var sorted = tuples.map(parseTuple).sort(compareTuples).map(getTupleName)
 
-  t.same(sorted, ['darwin-x64', 'darwin-x64_arm64', 'darwin-arm64_x64_ia32'])
+  t.same(sorted, ['darwin-x64', 'darwin-x64+arm64', 'darwin-arm64+x64+ia32'])
   t.end()
 })
 
 test('match tuples', function (t) {
-  var tuples = ['linux-arm64', 'darwin-x64_arm64', 'darwin-x64'].map(parseTuple)
+  var tuples = ['linux-arm64', 'darwin-x64+arm64', 'darwin-x64'].map(parseTuple)
 
   t.is(tuples.filter(matchTuple('darwin', 'x64')).sort(compareTuples)[0].name, 'darwin-x64')
-  t.is(tuples.filter(matchTuple('darwin', 'arm64')).sort(compareTuples)[0].name, 'darwin-x64_arm64')
+  t.is(tuples.filter(matchTuple('darwin', 'arm64')).sort(compareTuples)[0].name, 'darwin-x64+arm64')
   t.is(tuples.filter(matchTuple('linux', 'arm64')).sort(compareTuples)[0].name, 'linux-arm64')
   t.is(tuples.some(matchTuple('linux', 'other')), false)
   t.is(tuples.some(matchTuple('other', 'arm64')), false)

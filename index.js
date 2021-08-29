@@ -91,12 +91,12 @@ function matchBuild (name) {
 }
 
 function parseTuple (name) {
-  // Example: darwin-x64_arm64
+  // Example: darwin-x64+arm64
   var arr = name.split('-')
   if (arr.length !== 2) return
 
   var platform = arr[0]
-  var architectures = arr[1].split('_')
+  var architectures = arr[1].split('+')
 
   if (!platform) return
   if (!architectures.length) return
