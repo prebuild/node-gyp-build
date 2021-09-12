@@ -59,8 +59,13 @@ load.path = function (dir) {
   throw new Error('No native build was found for ' + target + '\n    loaded from: ' + dir + '\n')
 
   function resolve (dir) {
+    // Find matching "prebuilds/<platform>-<arch>" directory
+    var tuples = readdirSync(path.join(dir, 'prebuilds')).map(parseTuple)
+    var tuple = tuples.filter(matchTuple(platform, arch)).sort(compareTuples)[0]
+    if (!tuple) return
+
     // Find most specific flavor first
-    var prebuilds = path.join(dir, 'prebuilds', platform + '-' + arch)
+    var prebuilds = path.join(dir, 'prebuilds', tuple.name)
     var parsed = readdirSync(prebuilds).map(parseTags)
     var candidates = parsed.filter(matchTags(runtime, abi))
     var winner = candidates.sort(compareTags(runtime))[0]
@@ -83,6 +88,34 @@ function getFirst (dir, filter) {
 
 function matchBuild (name) {
   return /\.node$/.test(name)
+}
+
+function parseTuple (name) {
+  // Example: darwin-x64+arm64
+  var arr = name.split('-')
+  if (arr.length !== 2) return
+
+  var platform = arr[0]
+  var architectures = arr[1].split('+')
+
+  if (!platform) return
+  if (!architectures.length) return
+  if (!architectures.every(Boolean)) return
+
+  return { name, platform, architectures }
+}
+
+function matchTuple (platform, arch) {
+  return function (tuple) {
+    if (tuple == null) return false
+    if (tuple.platform !== platform) return false
+    return tuple.architectures.includes(arch)
+  }
+}
+
+function compareTuples (a, b) {
+  // Prefer single-arch prebuilds over multi-arch
+  return a.architectures.length - b.architectures.length
 }
 
 function parseTags (file) {
@@ -164,3 +197,6 @@ function isAlpine (platform) {
 load.parseTags = parseTags
 load.matchTags = matchTags
 load.compareTags = compareTags
+load.parseTuple = parseTuple
+load.matchTuple = matchTuple
+load.compareTuples = compareTuples
