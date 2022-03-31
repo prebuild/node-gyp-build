@@ -8,7 +8,8 @@ var runtimeRequire = typeof __webpack_require__ === 'function' ? __non_webpack_r
 var vars = (process.config && process.config.variables) || {}
 var prebuildsOnly = !!process.env.PREBUILDS_ONLY
 var abi = process.versions.modules // TODO: support old node where this is undef
-var runtime = isElectron() ? 'electron' : 'node'
+var runtime = isElectron() ? 'electron' : (isNwjs() ? 'node-webkit' : 'node')
+
 var arch = os.arch()
 var platform = os.platform()
 var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
@@ -180,6 +181,10 @@ function compareTags (runtime) {
       return 0
     }
   }
+}
+
+function isNwjs () {
+  return !!(process.versions && process.versions.nw)
 }
 
 function isElectron () {
