@@ -23,8 +23,9 @@ function load (dir) {
 
 load.path = function (dir) {
   dir = path.resolve(dir || '.')
-  var packageName = runtimeRequire(path.join(dir, 'package.json')).name
+  var packageName
   try {
+    packageName = runtimeRequire(path.join(dir, 'package.json')).name
     var varName = packageName.toUpperCase().replace(/-/g, '_') + '_PREBUILD'
     if (process.env[varName]) dir = process.env[varName]
   } catch (err) {}
@@ -46,10 +47,7 @@ load.path = function (dir) {
   try {
     var prebuildPackage = path.dirname(require('module').createRequire(path.join(dir, 'package.json')).resolve(platformPackage))
     return resolveFile(prebuildPackage)
-  } catch(error) {
-    console.error(error)
-  }
-
+  } catch(error) {}
 
   var target = [
     'platform=' + platform,
