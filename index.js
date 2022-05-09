@@ -48,7 +48,7 @@ load.path = function (dir) {
   try {
     var prebuildPackage = path.dirname(require('module').createRequire(path.join(dir, 'package.json')).resolve(platformPackage))
     return resolveFile(prebuildPackage)
-  } catch(error) {}
+  } catch (error) {}
 
   var target = [
     'platform=' + platform,
