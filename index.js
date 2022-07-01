@@ -24,12 +24,12 @@ function load (dir) {
 
 load.path = function (dir) {
   dir = path.resolve(dir || '.')
-
+  var packageName
   try {
-    var name = runtimeRequire(path.join(dir, 'package.json')).name.toUpperCase().replace(/-/g, '_')
-    if (process.env[name + '_PREBUILD']) dir = process.env[name + '_PREBUILD']
+    packageName = runtimeRequire(path.join(dir, 'package.json')).name
+    var varName = packageName.toUpperCase().replace(/-/g, '_') + '_PREBUILD'
+    if (process.env[varName]) dir = process.env[varName]
   } catch (err) {}
-
   if (!prebuildsOnly) {
     var release = getFirst(path.join(dir, 'build/Release'), matchBuild)
     if (release) return release
@@ -43,6 +43,15 @@ load.path = function (dir) {
 
   var nearby = resolve(path.dirname(process.execPath))
   if (nearby) return nearby
+
+  if (packageName !== undefined) {
+    // append platform, and prefix with scoped name matching package name if unscoped
+    var platformPackage = (packageName[0] === '@' ? '' : '@' + packageName + '/') + packageName + '-' + platform + '-' + arch
+    try {
+      var prebuildPackage = path.dirname(require('module').createRequire(path.join(dir, 'package.json')).resolve(platformPackage))
+      return resolveFile(prebuildPackage)
+    } catch (error) {}
+  }
 
   var target = [
     'platform=' + platform,
@@ -64,9 +73,10 @@ load.path = function (dir) {
     var tuples = readdirSync(path.join(dir, 'prebuilds')).map(parseTuple)
     var tuple = tuples.filter(matchTuple(platform, arch)).sort(compareTuples)[0]
     if (!tuple) return
-
+    return resolveFile(path.join(dir, 'prebuilds', tuple.name))
+  }
+  function resolveFile (prebuilds) {
     // Find most specific flavor first
-    var prebuilds = path.join(dir, 'prebuilds', tuple.name)
     var parsed = readdirSync(prebuilds).map(parseTags)
     var candidates = parsed.filter(matchTags(runtime, abi))
     var winner = candidates.sort(compareTags(runtime))[0]
