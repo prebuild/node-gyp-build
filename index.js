@@ -10,8 +10,8 @@ var prebuildsOnly = !!process.env.PREBUILDS_ONLY
 var abi = process.versions.modules // TODO: support old node where this is undef
 var runtime = isElectron() ? 'electron' : (isNwjs() ? 'node-webkit' : 'node')
 
-var arch = os.arch()
-var platform = os.platform()
+var arch = process.env.npm_config_arch || os.arch()
+var platform = process.env.npm_config_platform || os.platform()
 var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
 var armv = process.env.ARM_VERSION || (arch === 'arm64' ? '8' : vars.arm_version) || ''
 var uv = (process.versions.uv || '').split('.')[0]
