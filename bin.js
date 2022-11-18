@@ -37,11 +37,15 @@ function build () {
 }
 
 function preinstall () {
-  if (!process.argv[2]) return build()
-  exec(process.argv[2]).on('exit', function (code) {
-    if (code) process.exit(code)
+  try {
+    // try to load the prebuild
+    const load = require("node-gyp-build/index.js")
+    load()
+  } catch (err) {
+    // report the error and fall to a build
+    console.error(err.message)
     build()
-  })
+  }
 }
 
 function exec (cmd) {
