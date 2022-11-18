@@ -39,7 +39,7 @@ function build () {
 function preinstall () {
   try {
     // try to load the prebuild
-    const load = require("node-gyp-build/index.js")
+    const load = require('node-gyp-build/index.js')
     load()
   } catch (err) {
     // report the error and fall to a build
