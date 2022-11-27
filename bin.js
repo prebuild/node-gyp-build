@@ -26,11 +26,9 @@ function build () {
     ]
   } catch (_) {}
 
+  // run node-gyp-build
   proc.spawn(args[0], args.slice(1), { stdio: 'inherit' }).on('exit', function (code) {
-    if (code || !process.argv[3]) process.exit(code)
-    exec(process.argv[3]).on('exit', function (code) {
-      process.exit(code)
-    })
+    if (code) process.exit(code)
   })
 }
 
@@ -44,20 +42,6 @@ function preinstall () {
     console.error(err.message)
     build()
   }
-}
-
-function exec (cmd) {
-  if (process.platform !== 'win32') {
-    var shell = os.platform() === 'android' ? 'sh' : '/bin/sh'
-    return proc.spawn(shell, ['-c', '--', cmd], {
-      stdio: 'inherit'
-    })
-  }
-
-  return proc.spawn(process.env.comspec || 'cmd.exe', ['/s', '/c', '"' + cmd + '"'], {
-    windowsVerbatimArguments: true,
-    stdio: 'inherit'
-  })
 }
 
 function buildFromSource () {
