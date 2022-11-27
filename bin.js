@@ -5,7 +5,8 @@ var os = require('os')
 var path = require('path')
 
 if (!buildFromSource()) {
-  proc.exec(process.execPath, ['node-gyp-build-test'], function (err, stdout, stderr) {
+  proc.exec(process.execPath, [path.join(__dirname, 'build-test.js')], function (err, stdout, stderr) {
+    console.log(stdout)
     if (err) {
       if (verbose()) console.error(stderr)
       preinstall()
@@ -36,7 +37,7 @@ function build () {
 function preinstall () {
   try {
     // try to load the prebuild
-    const load = require('node-gyp-build/index.js')
+    const load = require(path.join(__dirname, 'index.js'))
     load()
   } catch (err) {
     // report the error and fall to a build
