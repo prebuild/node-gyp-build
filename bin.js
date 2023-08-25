@@ -21,7 +21,7 @@ function build () {
   try {
     args = [
       process.execPath,
-      path.join(require.resolve('node-gyp/package.json'), '..', require('node-gyp/package.json').bin['node-gyp']),
+      path.join(require.resolve('node-gyp/package.json'), '..', require('node-gyp/package.json').bin),
       'rebuild'
     ]
   } catch (_) {}
