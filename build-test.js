@@ -3,6 +3,8 @@
 process.env.NODE_ENV = 'test'
 
 var path = require('path')
+
+// find the test command from package.json prebuild.test entry
 var test = null
 
 try {
@@ -15,5 +17,12 @@ try {
   //  do nothing
 }
 
-if (test) require(path.join(process.cwd(), test))
-else require('./')()
+if (test) {
+  const testPath = path.join(process.cwd(), test)
+  console.log(`Running require("${testPath}")`)
+  require(testPath)
+}
+else {
+  console.log(`Running require("./")() at ${process.cwd()}`)
+  require('./')()
+}
