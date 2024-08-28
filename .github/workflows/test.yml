@@ -5,7 +5,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: [8, 16, 18, 20, latest]
+        node: [18, 20, 22, latest]  # https://nodejs.org/en/about/previous-releases
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }} / Node ${{ matrix.node }}
     steps:
