@@ -13,7 +13,22 @@ var runtime = isElectron() ? 'electron' : (isNwjs() ? 'node-webkit' : 'node')
 var arch = process.env.npm_config_arch || os.arch()
 var platform = process.env.npm_config_platform || os.platform()
 var libc = process.env.LIBC || (isAlpine(platform) ? 'musl' : 'glibc')
-var armv = process.env.ARM_VERSION || (arch === 'arm64' ? '8' : vars.arm_version) || ''
+let armv = process.env.ARM_VERSION;
+if (!armv) {
+  if (arch === 'arm64') {
+    armv = '8';
+  } else if (arch === 'arm') {
+    // ARMv7 detection patched to avoid arm_version === "default" 
+    // on other arm systems than arm64 ones
+    if (vars.arm_version === 'default') {
+      armv = '7';
+    } else {
+      armv = vars.arm_version;
+    }
+  } else {
+    armv = '';
+  }
+}
 var uv = (process.versions.uv || '').split('.')[0]
 
 module.exports = load
