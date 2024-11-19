@@ -1,6 +1,6 @@
 {
   "name": "node-gyp-build",
-  "version": "4.8.3",
+  "version": "4.8.4",
   "description": "Build tool and bindings loader for node-gyp that supports prebuilds",
   "main": "index.js",
   "imports": {
