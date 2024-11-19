@@ -4,13 +4,22 @@ var proc = require('child_process')
 var os = require('os')
 var path = require('path')
 
+var targetMismatch = (process.env.npm_config_platform && process.platform !== process.env.npm_config_platform) ||
+  (process.env.npm_config_arch && process.arch !== process.env.npm_config_arch)
+
 if (!buildFromSource()) {
-  proc.exec('node-gyp-build-test', function (err, stdout, stderr) {
-    if (err) {
-      if (verbose()) console.error(stderr)
-      preinstall()
-    }
-  })
+  if (targetMismatch) {
+    // If the target is mismatched, then we can't test prebuilds.
+    // Instead, we just check whether a matching prebuild exists, and fail if it doesn't.
+    require('./index').path()
+  } else {
+    proc.exec('node-gyp-build-test', function (err, stdout, stderr) {
+      if (err) {
+        if (verbose()) console.error(stderr)
+        preinstall()
+      }
+    })
+  }
 } else {
   preinstall()
 }
