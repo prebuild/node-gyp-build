@@ -68,7 +68,9 @@ function buildFromSource () {
 }
 
 function verbose () {
-  return hasFlag('--verbose') || process.env.npm_config_loglevel === 'verbose'
+  return hasFlag('--verbose') ||
+    process.env.npm_config_loglevel === 'verbose' ||
+    process.env.npm_config_loglevel === 'silly'
 }
 
 // TODO (next major): remove in favor of env.npm_config_* which works since npm
