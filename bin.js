@@ -5,7 +5,8 @@ var os = require('os')
 var path = require('path')
 
 if (!buildFromSource()) {
-  proc.exec('node-gyp-build-test', function (err, stdout, stderr) {
+  proc.exec(process.execPath, [path.join(__dirname, 'build-test.js')], function (err, stdout, stderr) {
+    console.log(stdout)
     if (err) {
       if (verbose()) console.error(stderr)
       preinstall()
@@ -32,35 +33,19 @@ function build () {
 
   proc.spawn(args[0], args.slice(1), { stdio: 'inherit', shell, windowsHide: true }).on('exit', function (code) {
     if (code || !process.argv[3]) process.exit(code)
-    exec(process.argv[3]).on('exit', function (code) {
-      process.exit(code)
-    })
   })
 }
 
 function preinstall () {
-  if (!process.argv[2]) return build()
-  exec(process.argv[2]).on('exit', function (code) {
-    if (code) process.exit(code)
+  try {
+    // try to load the prebuild
+    const load = require(path.join(__dirname, 'index.js'))
+    load()
+  } catch (err) {
+    // report the error and fall to a build
+    console.error(err.message)
     build()
-  })
-}
-
-function exec (cmd) {
-  if (process.platform !== 'win32') {
-    var shell = os.platform() === 'android' ? 'sh' : true
-    return proc.spawn(cmd, [], {
-      shell,
-      stdio: 'inherit'
-    })
   }
-
-  return proc.spawn(cmd, [], {
-    windowsVerbatimArguments: true,
-    stdio: 'inherit',
-    shell: true,
-    windowsHide: true
-  })
 }
 
 function buildFromSource () {
