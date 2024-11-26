@@ -45,7 +45,9 @@ load.resolve = load.path = function (dir) {
   var nearby = resolve(path.dirname(process.execPath))
   if (nearby) return nearby
 
-  var electronVersion = runtime === "electron" && process.env.npm_config_target ? process.env.npm_config_target : process.versions.electron;  
+  var nodeVersion = runtime !== "electron" && process.env.npm_config_target ? process.env.npm_config_target : process.versions.node
+  var electronVersion = runtime === "electron" && process.env.npm_config_target ? process.env.npm_config_target : process.versions.electron
+  
   var target = [
     'platform=' + platform,
     'arch=' + arch,
@@ -54,7 +56,7 @@ load.resolve = load.path = function (dir) {
     'uv=' + uv,
     armv ? 'armv=' + armv : '',
     'libc=' + libc,
-    'node=' + process.versions.node,
+    'node=' + nodeVersion,
     electronVersion ? 'electron=' + electronVersion : '',
     typeof __webpack_require__ === 'function' ? 'webpack=true' : '' // eslint-disable-line
   ].filter(Boolean).join(' ')
