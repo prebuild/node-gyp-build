@@ -1,14 +1,15 @@
 var fs = require('fs')
 var path = require('path')
 var os = require('os')
+var nodeAbi = require("node-abi")
 
 // Workaround to fix webpack's build warnings: 'the request of a dependency is an expression'
 var runtimeRequire = typeof __webpack_require__ === 'function' ? __non_webpack_require__ : require // eslint-disable-line
 
 var vars = (process.config && process.config.variables) || {}
 var prebuildsOnly = !!process.env.PREBUILDS_ONLY
-var abi = process.versions.modules // TODO: support old node where this is undef
 var runtime = isElectron() ? 'electron' : (isNwjs() ? 'node-webkit' : 'node')
+var abi = process.env.npm_config_target ? nodeAbi.getAbi(process.env.npm_config_target, runtime) : process.versions.modules // TODO: support old node where this is undef
 
 var arch = process.env.npm_config_arch || os.arch()
 var platform = process.env.npm_config_platform || os.platform()
@@ -44,6 +45,9 @@ load.resolve = load.path = function (dir) {
   var nearby = resolve(path.dirname(process.execPath))
   if (nearby) return nearby
 
+  var nodeVersion = runtime !== "electron" && process.env.npm_config_target ? process.env.npm_config_target : process.versions.node
+  var electronVersion = runtime === "electron" && process.env.npm_config_target ? process.env.npm_config_target : process.versions.electron
+  
   var target = [
     'platform=' + platform,
     'arch=' + arch,
@@ -52,8 +56,8 @@ load.resolve = load.path = function (dir) {
     'uv=' + uv,
     armv ? 'armv=' + armv : '',
     'libc=' + libc,
-    'node=' + process.versions.node,
-    process.versions.electron ? 'electron=' + process.versions.electron : '',
+    'node=' + nodeVersion,
+    electronVersion ? 'electron=' + electronVersion : '',
     typeof __webpack_require__ === 'function' ? 'webpack=true' : '' // eslint-disable-line
   ].filter(Boolean).join(' ')
 
@@ -188,6 +192,7 @@ function isNwjs () {
 }
 
 function isElectron () {
+  if (process.env.npm_config_runtime === "electron") return true
   if (process.versions && process.versions.electron) return true
   if (process.env.ELECTRON_RUN_AS_NODE) return true
   return typeof window !== 'undefined' && window.process && window.process.type === 'renderer'

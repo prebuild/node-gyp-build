@@ -17,6 +17,9 @@
       "default": "os"
     }
   },
+  "dependencies": {
+    "node-abi": "^3.71.0"
+  },
   "devDependencies": {
     "array-shuffle": "^1.0.1",
     "standard": "^14.0.0",
